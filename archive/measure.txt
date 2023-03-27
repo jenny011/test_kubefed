@@ -1,0 +1,27 @@
+# !/bin/bash
+## MEASURE node
+
+# Provide the IPs from the OUTPUT file
+MEMCACHED_IP=0
+INTERNAL_AGENT_IP=0
+
+# Run these once to compile the memcached load generator
+sudo apt-get update
+sudo apt-get install libevent-dev libzmq3-dev git make g++ --yes 
+sudo cp /etc/apt/sources.list /etc/apt/sources.list~
+sudo sed -Ei 's/^# deb-src /deb-src /' /etc/apt/sources.list
+sudo apt-get update
+sudo apt-get build-dep memcached --yes
+cd && git clone https://github.com/shaygalon/memcache-perf.git
+cd memcache-perf
+make
+
+# help
+#./mcperf -h
+
+# Run for each interference
+# Load the memcached database 
+./mcperf -s MEMCACHED_IP --loadonly
+
+# Query memcached with throughput from 5000 to 80000 QPS with increments of 5000
+./mcperf -s MEMCACHED_IP -a INTERNAL_AGENT_IP --noload -T 16 -C 4 -D 4 -Q 1000 -c 4 -w 2 -t 5 --scan 5000:80000:5000

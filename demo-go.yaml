@@ -1,0 +1,65 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: go-app
+
+---
+apiVersion: types.kubefed.io/v1beta1
+kind: FederatedNamespace
+metadata:
+  name: go-app
+  namespace: go-app
+spec:
+  placement:
+    clusterSelector: {}
+
+---
+apiVersion: types.kubefed.io/v1beta1
+kind: FederatedDeployment
+metadata:
+  name: go-app
+  namespace: go-app
+spec:
+  placement:
+    clusterSelector: {}
+  template:
+    metadata:
+      name: go-app
+      labels:
+        app: go-app
+    spec:
+      replicas: 2
+      selector:
+        matchLabels:
+          app: go-app
+      template:
+        metadata:
+          labels:
+            app: go-app
+        spec:
+          containers:
+          - name: go-app
+            image: adityashar/go-app
+            ports:
+            - containerPort: 8080
+              protocol: TCP
+
+---
+apiVersion: types.kubefed.io/v1beta1
+kind: FederatedService
+metadata:
+  name: go-app
+  namespace: go-app
+spec:
+  placement:
+    clusterSelector: {}
+  template:
+    spec:
+      selector:
+        app: go-app
+      type: LoadBalancer
+      ports:
+      - port: 8080
+        targetPort: 8080
+        nodePort: 30030
